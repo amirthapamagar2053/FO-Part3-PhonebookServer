@@ -9,11 +9,6 @@ App.use(express.static("build"));
 App.use(express.json());
 
 morgan.token("body", (req, res) => JSON.stringify(req.body));
-App.use(
-  morgan(
-    ":method :url :status :response-time ms - :res[conteny-length] :body -req:[content-length]"
-  )
-);
 
 let persons = [
   {
@@ -38,7 +33,7 @@ let persons = [
   },
 ];
 
-App.get("/persons", (req, res) => {
+App.get("/api/persons", (req, res) => {
   res.send(persons);
 });
 
@@ -49,31 +44,37 @@ App.get("/info", (req, res) => {
 ${today}`);
 });
 
-App.get("/persons/:id", (req, res) => {
+App.get("/api/persons/:id", (req, res) => {
   const id = Number(req.params.id);
   const currentid = persons.find((x) => x.id === id);
   if (currentid) res.send(currentid);
   else res.status(404).send("404 Not Found");
 });
 
-App.delete("/persons/:id", (req, res) => {
+App.delete("/api/persons/:id", (req, res) => {
   const id = Number(req.params.id);
-  persons = persons.filter((x) => x.id === id);
+  persons = persons.filter((x) => x.id !== id);
 });
 
-App.post("/persons/", (req, res) => {
-  let myIncomingData = req.body;
-  myIncomingData.id = Math.floor(Math.random() * 60);
+App.post(
+  "/api/persons",
+  morgan(":method :url :status :response-time ms :body"),
+  (req, res) => {
+    let myIncomingData = req.body;
+    myIncomingData.id = Math.floor(Math.random() * 60);
 
-  if (
-    persons.map((x) => x.name).includes(myIncomingData.name) &&
-    persons.map((x) => x.number).includes(myIncomingData.number)
-  )
-    res.send({ error: "name must be unique" });
-  else {
-    persons.push(myIncomingData);
-    res.status(201).json(myIncomingData);
+    if (
+      myIncomingData.number === undefined ||
+      myIncomingData.name === undefined ||
+      persons.map((x) => x.name).includes(myIncomingData.name)
+    )
+      res.send({ error: "name must be unique" });
+    else {
+      persons.push(myIncomingData);
+      res.status(201).json(myIncomingData);
+    }
   }
-});
+);
+const PORT = process.env.PORT || 3001;
 
-App.listen("3001", () => console.log("starting the dev server"));
+App.listen(PORT, () => console.log(`starting the dev server on ${PORT}`));
