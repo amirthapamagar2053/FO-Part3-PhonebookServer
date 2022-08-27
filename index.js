@@ -64,8 +64,8 @@ App.post(
     myIncomingData.id = Math.floor(Math.random() * 60);
 
     if (
-      myIncomingData.number === undefined ||
-      myIncomingData.name === undefined ||
+      !Object.keys(myIncomingData).includes("name") ||
+      !Object.keys(myIncomingData).includes("number") ||
       persons.map((x) => x.name).includes(myIncomingData.name)
     )
       res.send({ error: "name must be unique" });
