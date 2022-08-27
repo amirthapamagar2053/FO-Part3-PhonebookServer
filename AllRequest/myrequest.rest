@@ -1,0 +1,10 @@
+POST http://localhost:3001/persons/
+Content-Type: application/json
+
+{
+    "name": "random name",
+    "number":12433432
+}
+
+###
+GET http://localhost:3001/persons
