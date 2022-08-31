@@ -4,10 +4,11 @@ Content-Type: application/json
 {
     "name":"ytffwasaaTSAmir Thapa",
     "number":1243343267
+
 }
 
 ###
 GET http://localhost:3001/api/persons
 
 ###
-DELETE http://localhost:3001/api/persons/23
+DELETE http://localhost:3001/api/persons/2334
