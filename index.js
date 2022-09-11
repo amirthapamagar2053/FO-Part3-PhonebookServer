@@ -6,7 +6,7 @@ const App = express();
 App.use(express.static("build"));
 App.use(cors());
 App.use(express.json());
-
+// eslint-disable-next-line
 morgan.token("body", (req, res) => JSON.stringify(req.body));
 
 App.get("/api/persons", (req, res, next) => {
@@ -28,7 +28,7 @@ App.put("/api/persons/:id", (request, res, next) => {
   Person.findByIdAndUpdate(
     request.params.id,
     person,
-    { new: true },
+    // { new: true },
     { new: true, runValidators: true, context: "query" } /*for validation*/
   )
     .then((updatedNote) => {
@@ -59,6 +59,7 @@ App.get("/api/persons/:id", (req, res, next) => {
 
 App.delete("/api/persons/:id", (req, res, next) => {
   Person.findByIdAndRemove(req.params.id)
+    // eslint-disable-next-line
     .then((result) => {
       res.status(204).end();
     })
@@ -74,39 +75,59 @@ App.post(
     let myIncomingData = req.body;
     myIncomingData.id = Math.floor(Math.random() * 60);
     console.log(myIncomingData.id);
-    if (!req.body.name || !req.body.number) {
+    if (!req.body.name /*|| !req.body.number handled in error handler */) {
       res.json({ error: "content missing" });
     } else {
-      Person.find({ name: myIncomingData.name }).then((result) => {
-        if (result.length === 1) {
-          res.send("name must be unique");
-        } else {
-          const person = new Person({
-            name: myIncomingData.name,
-            number: myIncomingData.number,
-            id: myIncomingData.id,
-          });
-          person
-            .save()
-            .then((result) => {
-              console.log(result);
-              res.send(result);
-            })
-            .catch((error) => next(error));
-        }
+      // Code without using validation
+      // Person.find({ name: myIncomingData.name }).then((result) => {
+      //   if (result.length === 1) {
+      //     res.send({ unique: "name must be unique" });
+
+      //     // res.send("name must be unique");
+      //     // res.status(404).json({ error: "name must be unique" });
+      //   } else {
+      //     const person = new Person({
+      //       name: myIncomingData.name,
+      //       number: myIncomingData.number,
+      //       id: myIncomingData.id,
+      //     });
+      //     person
+      //       .save()
+      //       .then((result) => {
+      //         console.log(result);
+      //         res.send(result);
+      //       })
+      //       .catch((error) => next(error));
+      //   }
+      // });
+      const person = new Person({
+        name: myIncomingData.name,
+        number: myIncomingData.number,
+        id: myIncomingData.id,
       });
+      person
+        .save()
+        .then((result) => {
+          console.log(result);
+          res.send(result);
+        })
+        .catch((error) => next(error));
     }
   }
 );
+// eslint-disable-next-line
 const errorHandler = (error, request, response, next) => {
   console.error(error.message);
+  console.log("The error name is", error.name);
   console.log("error handler enterd");
 
   if (error.name === "CastError") {
     return response.status(400).send({ error: "malformatted id" });
   } else if (error.name === "ValidationError") {
     console.log("validation entered");
-    return response.status(400).json({ error: error.message });
+    return response.status(400).json(error);
+  } else {
+    return response.status(404).send({ error: "name must be unique" });
   }
 };
 

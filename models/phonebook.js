@@ -7,6 +7,7 @@ console.log("connecting to", url);
 
 mongoose
   .connect(url)
+  // eslint-disable-next-line
   .then((result) => {
     console.log("connected to MongoDB");
   })
@@ -19,8 +20,21 @@ const personSchema = new mongoose.Schema({
     type: String,
     minLength: 3,
     required: true,
+    unique: true, //Validation attribute for unique name
   },
-  number: Number,
+  number: {
+    type: String,
+    validate: {
+      validator: function (v) {
+        // eslint-disable-next-line
+        return /^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$/im.test(
+          v
+        );
+      },
+      message: (props) => `${props.value} is not a valid phone number!`,
+    },
+    required: [true, "User phone number required"],
+  },
   id: String,
 });
 
